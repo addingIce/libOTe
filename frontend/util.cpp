@@ -47,7 +47,7 @@ namespace osuCrypto
 		if (role == Role::Receiver)
 		{
 
-			u8 dummy[1];
+			u8 dummy[1] = {0};
 			chl.recv(dummy, 1);
 			Timer timer;
 
@@ -67,7 +67,7 @@ namespace osuCrypto
 		}
 		else
 		{
-			u8 dummy[1];
+			u8 dummy[1] = {0};
 			chl.asyncSend(dummy, 1);
 			chl.recv(dummy, 1);
 			chl.asyncSend(dummy, 1);

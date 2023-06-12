@@ -97,7 +97,7 @@ class Chunker<
 {
 protected:
 	// Derved* forces correct inheritance (https://stackoverflow.com/a/4418038/4071916)
-	Chunker(Derived* this_) {}
+	Chunker(Derived*) {}
 
 public:
 	using InstanceParams = std::tuple<InstParams...>;
@@ -132,7 +132,7 @@ public:
 		size_t n;
 
 		template<typename T, typename U>
-		int operator()(const T& in, const U* out) const { return 0; }
+		int operator()(const T&, const U*) const { return 0; }
 		template<typename T, typename U>
 		int operator()(const T& in, U* out) const { std::copy_n(in.get(), n, out); return 0; }
 	};
@@ -163,7 +163,7 @@ public:
 
 	template<typename... ChunkParams, typename... GlobalParams>
 	TRY_FORCEINLINE void runBatch(
-		Channel& chl, span<InstParams>... instParams,
+		Channel&, span<InstParams>... instParams,
 		span<ChunkParams>... chunkParams, GlobalParams&&... globalParams)
 	{
 		size_t numInstances = checkSpanLengths(instParams..., chunkParams...).first;
@@ -348,6 +348,7 @@ struct ChunkerAlloc<std::unique_ptr<T[]>>
 	}
 };
 
+#ifdef ENABLE_AVX
 template<typename T>
 struct ChunkerAlloc<AlignedBlockPtrT<T>>
 {
@@ -356,5 +357,6 @@ struct ChunkerAlloc<AlignedBlockPtrT<T>>
 		return allocAlignedBlockArray<T>(n);
 	}
 };
+#endif
 
 }

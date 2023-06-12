@@ -38,7 +38,7 @@ public:
 		return std::make_unique<TwoOneSemiHonestSender>(splitBase());
 	}
 
-	virtual void initTemporaryStorage() { ChunkerBase::initTemporaryStorage(); }
+	virtual void initTemporaryStorage() override { ChunkerBase::initTemporaryStorage(); }
 
 	void send(span<std::array<block, 2>> messages, PRNG& prng, Channel& chl) override;
 
@@ -137,7 +137,7 @@ public:
 		return std::make_unique<TwoOneSemiHonestReceiver>(splitBase());
 	}
 
-	virtual void initTemporaryStorage() { ChunkerBase::initTemporaryStorage(); }
+	virtual void initTemporaryStorage() override { ChunkerBase::initTemporaryStorage(); }
 
 	void receive(const BitVector& choices, span<block> messages, PRNG& prng, Channel& chl) override;
 

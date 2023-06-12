@@ -28,13 +28,16 @@ if("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
 		endif()
 
 	else()
-		set(COMMON_FLAGS "-Wall -march=native -Wfatal-errors")
+		set(COMMON_FLAGS "-Wall -Wfatal-errors -g")
+		if(NOT (("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64") OR ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")) AND ENABLE_AVX)
+		       set(COMMON_FLAGS "${COMMON_FLAGS} -march=native -mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq")
+		endif()
 		SET(CMAKE_CXX_FLAGS_RELEASE "-O3  -DNDEBUG -DGSL_UNENFORCED_ON_CONTRACT_VIOLATION")
 		SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO " -O2 -g -ggdb")
 		SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g -ggdb")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++17")
 	endif()
-	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+	#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
@@ -60,6 +63,7 @@ if("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
 
 endif()
 
+include_directories(cryptoTools/thirdparty)
 
 #############################################
 #    Build cryptoTools (common utilities)   #
@@ -96,6 +100,7 @@ add_subdirectory(libOTe_Tests)
 #              Build Frontend               #
 #############################################
 add_subdirectory(frontend)
+#add_subdirectory(minimal)
 
 
 

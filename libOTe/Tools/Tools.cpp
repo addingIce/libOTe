@@ -2,6 +2,8 @@
 #include <type_traits>
 #include <cryptoTools/Common/Defines.h>
 #include <cryptoTools/Common/MatrixView.h>
+
+#ifdef __x86_64__
 #ifndef _MSC_VER
 #include <x86intrin.h>
 #endif
@@ -11,6 +13,7 @@
 #endif
 #ifdef OC_ENABLE_AVX2
 #include <immintrin.h>
+#endif
 #endif
 
 #include <cryptoTools/Common/BitVector.h>
@@ -287,7 +290,6 @@ namespace osuCrypto {
 
 
 
-#ifdef OC_ENABLE_SSE2
     //  load          column  w,w+1          (byte index)
     //                   __________________
     //                  |                  |
@@ -869,7 +871,6 @@ namespace osuCrypto {
 
 
     }
-#endif
 
 #ifdef OC_ENABLE_AVX2
     // Templates are used for loop unrolling.

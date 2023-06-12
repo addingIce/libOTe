@@ -128,7 +128,7 @@ TRY_FORCEINLINE void SmallFieldVoleSender::generateImpl(
 			block path[divCeil(fieldBitsMax, superBlkShift)][superBlkSize];
 			for (size_t i = 0; i < fieldBits; ++i)
 				// GCC seems to generate better code with an open coded memset.
-				outV[i] = toBlock(0UL);
+				outV[i] = toBlock(std::uint64_t(0));
 
 			#ifdef __GNUC__
 			#pragma GCC unroll 4
@@ -191,7 +191,7 @@ TRY_FORCEINLINE void SmallFieldVoleReceiver::generateImpl(
 			// Intersperse the hashes with zeros, because the zeroth seed for each VOLE is unknown.
 			for (size_t i = 0; i < volePerSuperBlk; ++i)
 			{
-				xorHashes[i * fieldSize] = toBlock(0UL);
+				xorHashes[i * fieldSize] = toBlock(std::uint64_t(0));
 				for (size_t j = 0; j < aesPerVole; ++j)
 					xorHashes[i * fieldSize + j + 1] = hashes[i * aesPerVole + j];
 			}
@@ -220,7 +220,7 @@ TRY_FORCEINLINE void SmallFieldVoleReceiver::generateImpl(
 					outW[i] = correction[nVole] & block::allSame(deltaPtr[i]);
 			else
 				for (size_t i = 0; i < fieldBits; ++i)
-					outW[i] = toBlock(0UL);
+					outW[i] = toBlock(std::uint64_t(0));
 
 			block input0[superBlkSize -  1];
 			for (size_t i = 0; i < superBlkSize - 1; ++i, ++seeds)
@@ -228,7 +228,7 @@ TRY_FORCEINLINE void SmallFieldVoleReceiver::generateImpl(
 			aes.hashBlocks<superBlkSize - 1>(input0, &path[0][1]);
 
 			// The zeroth seed is unknown, so set the corresponding path element to zero.
-			path[0][0] = toBlock(0UL);
+			path[0][0] = toBlock(std::uint64_t(0));
 
 			size_t superBlk = superBlkSize;
 			xorReducePath(fieldBits, fieldSize, superBlk, path, nullptr, outW, true);
@@ -268,7 +268,7 @@ SmallFieldVoleSender::SmallFieldVoleSender(size_t fieldBits_, size_t numVoles_) 
 	generatePtr(selectGenerateImpl(fieldBits))
 {
 	seeds.reset(new block[numVolesPadded * fieldSize()]);
-	std::fill_n(seeds.get(), numVolesPadded * fieldSize(), toBlock(0UL));
+	std::fill_n(seeds.get(), numVolesPadded * fieldSize(), toBlock(std::uint64_t(0)));
 }
 
 SmallFieldVoleReceiver::SmallFieldVoleReceiver(size_t fieldBits_, size_t numVoles_) :
@@ -277,7 +277,7 @@ SmallFieldVoleReceiver::SmallFieldVoleReceiver(size_t fieldBits_, size_t numVole
 	generatePtr(selectGenerateImpl(fieldBits))
 {
 	seeds.reset(new block[numVolesPadded * (fieldSize() - 1)]);
-	std::fill_n(seeds.get(), numVolesPadded * (fieldSize() - 1), toBlock(0UL));
+	std::fill_n(seeds.get(), numVolesPadded * (fieldSize() - 1), toBlock(std::uint64_t(0)));
 }
 
 SmallFieldVoleSender::SmallFieldVoleSender(size_t fieldBits_, size_t numVoles_, span<const block> seeds_) :

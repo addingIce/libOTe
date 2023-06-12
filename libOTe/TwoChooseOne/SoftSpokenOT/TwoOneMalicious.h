@@ -7,6 +7,8 @@
 #include "DotMaliciousLeaky.h"
 #include "TwoOneSemiHonest.h"
 
+#include <boost/predef.h>
+
 namespace osuCrypto
 {
 namespace SoftSpokenOT
@@ -24,8 +26,8 @@ struct TwoOneRTCR : AESRekeyManager
 	static block mul2(block x)
 	{
 		block wordsRotated = _mm_shuffle_epi32(x, 0b10010011);
-		block mask(std::array<u32, 4>{mod, 1, 1, 1});
-		block output = _mm_slli_epi32(x, 1);
+		block mask(std::array<u32, 4>{{mod, 1, 1, 1}});
+		block output = _mm_slli_epi32(x.mData, 1);
 		output ^= block(_mm_srai_epi32(wordsRotated, 31)) & mask;
 		return output;
 	}
@@ -65,7 +67,7 @@ struct TwoOneRTCR : AESRekeyManager
 
 		block tmp[numBlocks];
 		block tweakMulLocal = tweakMul; // Avoid aliasing concerns.
-		#ifdef __GNUC__
+		#if BOOST_COMP_GNUC >= BOOST_VERSION_NUMBER(8,0,0)
 		#pragma GCC unroll 16
 		#endif
 		for (size_t i = 0; i < numBlocks / blocksPerTweak; ++i)
@@ -84,7 +86,7 @@ struct TwoOneRTCR : AESRekeyManager
 		tweak += tweakIncrease;
 		tweakMul = tweakMulLocal ^ hashKeys[log2floor((tweak - 1) ^ tweak)];
 
-		mAESs.get().hashBlocks<numBlocks>(tmp, ciphertext);
+		mAESs.get().template hashBlocks<numBlocks>(tmp, ciphertext);
 	}
 };
 
@@ -141,7 +143,7 @@ public:
 		return std::make_unique<TwoOneMaliciousSender>(splitBase());
 	}
 
-	virtual void initTemporaryStorage()
+	virtual void initTemporaryStorage() override
 	{
 		Base::initTemporaryStorage();
 		hasher.initTemporaryStorage();
@@ -205,7 +207,7 @@ public:
 		return std::make_unique<TwoOneMaliciousReceiver>(splitBase());
 	}
 
-	virtual void initTemporaryStorage()
+	virtual void initTemporaryStorage() override
 	{
 		Base::initTemporaryStorage();
 		hasher.initTemporaryStorage();

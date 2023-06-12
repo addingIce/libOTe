@@ -48,7 +48,7 @@ class DotSemiHonestSenderWithVole :
 	public OtExtSender,
 	public TimerAdapter,
 	public AESRekeyManager,
-	private ChunkedReceiver<
+	public ChunkedReceiver<
 		DotSemiHonestSenderWithVole<SubspaceVole>,
 		std::tuple<std::array<block, 2>>,
 		std::tuple<AlignedBlockPtrT<std::array<block, 2>>>
@@ -159,7 +159,7 @@ protected:
 
 	static const size_t commSize = commStepSize * superBlkSize; // picked to match the other OTs.
 	size_t chunkSize() const { return 128; }
-	size_t paddingSize() const { return std::max(divCeil(wPadded(), 2), chunkSize()) - chunkSize(); }
+	size_t paddingSize() const { return std::max(size_t(divCeil(wPadded(), 2)), chunkSize()) - chunkSize(); }
 
 	void recvBuffer(Channel& chl, size_t batchSize) { vole->recv(chl, 0, batchSize); }
 	TRY_FORCEINLINE void processChunk(
@@ -171,7 +171,7 @@ class DotSemiHonestReceiverWithVole :
 	public OtExtReceiver,
 	public TimerAdapter,
 	public AESRekeyManager,
-	private ChunkedSender<
+	public ChunkedSender<
 		DotSemiHonestReceiverWithVole<SubspaceVole>,
 		std::tuple<block>,
 		std::tuple<AlignedBlockPtr>

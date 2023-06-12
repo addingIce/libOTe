@@ -53,6 +53,10 @@ if(DEFINED ENABLE_ALL_OT)
 	unset(ENABLE_ALL_OT CACHE)
 endif()
 
+set(ENABLE_SILENTOT  ${ENABLE_SOFTSPOKEN_OT}						CACHE BOOL "" FORCE)
+set(ENABLE_SILENT_VOLE  ${ENABLE_SOFTSPOKEN_OT}						CACHE BOOL "" FORCE)
+set(ENABLE_KOS  ${ENABLE_SOFTSPOKEN_OT}						CACHE BOOL "" FORCE)
+
 option(ENABLE_BITPOLYMUL     "Build with bit poly mul inegration" OFF)
 option(ENABLE_SIMPLESTOT     "Build the SimplestOT base OT" OFF)
 option(ENABLE_SIMPLESTOT_ASM "Build the assembly based SimplestOT library" OFF)

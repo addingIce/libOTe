@@ -101,7 +101,7 @@ void DotMaliciousLeakyReceiver::receiveImpl(
 	// Shift twice so that it becomes zero if bit64 = 0 (shift by 64 is undefined).
 	extraChoicesU64[word + 1] = sacrificialChoices >> (63 - bit64) >> 1;
 
-	block extraChoices[2] = {toBlock(0ul), toBlock(0ul)};
+	block extraChoices[2] = {toBlock(std::uint64_t(0)), toBlock(std::uint64_t(0))};
 	memcpy(extraChoices, extraChoicesU64, 2 * sizeof(block));
 
 	ChunkerBase::runBatch<block>(

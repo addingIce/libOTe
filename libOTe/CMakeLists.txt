@@ -4,7 +4,11 @@ file(GLOB_RECURSE SRCS *.cpp *.c)
 
 set(SRCS "${SRCS}")
 
-add_library(libOTe STATIC ${SRCS})
+if(ENABLE_SIMPLESTOT_ASM OR ENABLE_MR_KYBER)
+  add_library(libOTe STATIC ${SRCS})
+else()
+  add_library(libOTe ${SRCS})
+endif()
 
 
 # make projects that include libOTe use this as an include folder
@@ -23,10 +27,10 @@ if(MSVC)
 else()
 
     if(ENABLE_SSE)
-        target_compile_options(libOTe PRIVATE -maes -msse2 -msse3 -msse4.1 -mpclmul)
+        target_compile_options(libOTe PRIVATE -msse2)
     endif()
     if(ENABLE_AVX)
-        target_compile_options(libOTe PRIVATE -mavx2)
+        target_compile_options(libOTe PRIVATE -maes -msse3 -msse4.1 -mpclmul -mavx2)
     endif()
 endif()
 if (ENABLE_BITPOLYMUL)
