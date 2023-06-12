@@ -98,11 +98,10 @@ namespace osuCrypto
 			return highReduce ^ in;
 		}
 
-		static u64 reduceU64(block in)
-		{
-			return reduce(in).get<u64>()[0];
-			//return _mm_extract_epi64(reduce(in), 0);
-		}
+	static u64 reduceU64(block in)
+	{
+		return reduce(in).extract_epi64<0>();
+	}
 
 		void setupHash()
 		{

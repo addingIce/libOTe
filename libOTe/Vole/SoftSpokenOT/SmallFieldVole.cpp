@@ -129,25 +129,23 @@ namespace osuCrypto
 					input[i] = blockIdxBlock ^ *seeds;
 				aes.hashBlocks<superBlkSize>(input, hashes);
 
-				xorReduce<superBlkShift>(hashes, fieldBits);
-				for (u64 i = 0; i < volePerSuperBlk; ++i, ++outU)
-				{
-					for (u64 j = 0; j < fieldBits; ++j, ++outV)
-					{
-						*outV = hashes[i * fieldSize + j + 1];
-					}
-					*outU = hashes[i * fieldSize];
-				}
+			xorReduce<superBlkShift>(hashes, fieldBits);
+			for (size_t i = 0; i < volePerSuperBlk; ++i, ++outU)
+			{
+				for (size_t j = 0; j < fieldBits; ++j, ++outV)
+					*outV = hashes[i * fieldSize + j + 1];
+				*outU = hashes[i * fieldSize];
 			}
 		}
-		else // > 1 super block per VOLE.
+	}
+	else // > 1 super block per VOLE.
+	{
+		for (size_t nVole = 0; nVole < numVoles; ++nVole, outV += fieldBits, ++outU)
 		{
-			for (u64 nVole = 0; nVole < This.mNumVoles; ++nVole, outV += fieldBits, ++outU)
-			{
-				block path[divCeil(fieldBitsMax, superBlkShift)][superBlkSize];
-				for (u64 i = 0; i < fieldBits; ++i)
-					// GCC seems to generate better code with an open coded memset.
-					outV[i] = toBlock(0, 0);
+			block path[divCeil(fieldBitsMax, superBlkShift)][superBlkSize];
+			for (size_t i = 0; i < fieldBits; ++i)
+				// GCC seems to generate better code with an open coded memset.
+				outV[i] = toBlock(std::uint64_t(0));
 
 #ifdef __GNUC__
 #pragma GCC unroll 4
@@ -209,47 +207,47 @@ namespace osuCrypto
 					input[i] = blockIdxBlock ^ *seeds;
 				aes.hashBlocks<aesPerSuperBlk>(input, hashes);
 
-				// Intersperse the hashes with zeros, because the zeroth seed for each VOLE is unknown.
-				for (u64 i = 0; i < volePerSuperBlk; ++i)
-				{
-					xorHashes[i * fieldSize] = toBlock(0, 0);
-					for (u64 j = 0; j < aesPerVole; ++j)
-						xorHashes[i * fieldSize + j + 1] = hashes[i * aesPerVole + j];
-				}
-
-				xorReduce<fieldBits_, fieldsPerSuperBlk>(xorHashes, fieldBits);
-				if (correctionPresent)
-					for (u64 i = 0; i < volePerSuperBlk; ++i)
-						for (u64 j = 0; j < fieldBits; ++j, ++outW)
-							*outW = xorHashes[i * fieldSize + j + 1] ^
-								correction[i] & block::allSame(deltaPtr[i * fieldBits + j]);
-				else
-					for (u64 i = 0; i < volePerSuperBlk; ++i)
-						for (u64 j = 0; j < fieldBits; ++j, ++outW)
-							*outW = xorHashes[i * fieldSize + j + 1];
-			}
-		}
-		else
-		{
-			// > 1 super block per VOLE. Do blocks of 8, or 7 at the start because the zeroth seed in a
-			// VOLE is unknown.
-			for (u64 nVole = 0; nVole < This.mNumVoles; ++nVole, outW += fieldBits, deltaPtr += fieldBits)
+			// Intersperse the hashes with zeros, because the zeroth seed for each VOLE is unknown.
+			for (size_t i = 0; i < volePerSuperBlk; ++i)
 			{
-				block path[divCeil(fieldBitsMax, superBlkShift)][superBlkSize];
-				if (correctionPresent)
-					for (u64 i = 0; i < fieldBits; ++i)
-						outW[i] = correction[nVole] & block::allSame(deltaPtr[i]);
-				else
-					for (u64 i = 0; i < fieldBits; ++i)
-						outW[i] = toBlock(0, 0);
+				xorHashes[i * fieldSize] = toBlock(std::uint64_t(0));
+				for (size_t j = 0; j < aesPerVole; ++j)
+					xorHashes[i * fieldSize + j + 1] = hashes[i * aesPerVole + j];
+			}
+
+			xorReduce<fieldBits_, fieldsPerSuperBlk>(xorHashes, fieldBits);
+			if (correctionPresent)
+				for (size_t i = 0; i < volePerSuperBlk; ++i)
+					for (size_t j = 0; j < fieldBits; ++j, ++outW)
+						*outW = xorHashes[i * fieldSize + j + 1] ^
+							correction[i] & block::allSame(deltaPtr[i * fieldBits + j]);
+			else
+				for (size_t i = 0; i < volePerSuperBlk; ++i)
+					for (size_t j = 0; j < fieldBits; ++j, ++outW)
+						*outW = xorHashes[i * fieldSize + j + 1];
+		}
+	}
+	else
+	{
+		// > 1 super block per VOLE. Do blocks of 8, or 7 at the start because the zeroth seed in a
+		// VOLE is unknown.
+		for (size_t nVole = 0; nVole < numVoles; ++nVole, outW += fieldBits, deltaPtr += fieldBits)
+		{
+			block path[divCeil(fieldBitsMax, superBlkShift)][superBlkSize];
+			if (correctionPresent)
+				for (size_t i = 0; i < fieldBits; ++i)
+					outW[i] = correction[nVole] & block::allSame(deltaPtr[i]);
+			else
+				for (size_t i = 0; i < fieldBits; ++i)
+					outW[i] = toBlock(std::uint64_t(0));
 
 				block input0[superBlkSize - 1];
 				for (u64 i = 0; i < superBlkSize - 1; ++i, ++seeds)
 					input0[i] = blockIdxBlock ^ *seeds;
 				aes.hashBlocks<superBlkSize - 1>(input0, &path[0][1]);
 
-				// The zeroth seed is unknown, so set the corresponding path element to zero.
-				path[0][0] = toBlock(0, 0);
+			// The zeroth seed is unknown, so set the corresponding path element to zero.
+			path[0][0] = toBlock(std::uint64_t(0));
 
 				u64 superBlk = superBlkSize;
 				xorReducePath(fieldBits, fieldSize, superBlk, path, nullptr, outW, true);

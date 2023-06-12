@@ -12,6 +12,7 @@
 #ifdef OC_ENABLE_AVX2
 #include <immintrin.h>
 #endif
+#endif
 
 #include <cryptoTools/Common/BitVector.h>
 #include <cryptoTools/Common/Log.h>

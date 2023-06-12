@@ -20,8 +20,11 @@ if("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
 	add_definitions(-DSOLUTION_DIR='${CMAKE_SOURCE_DIR}')
 	if(MSVC)
 	else()
-		set(COMMON_FLAGS "-Wall -march=x86-64 -Wfatal-errors")
-		SET(CMAKE_CXX_FLAGS_RELEASE "-O3  -DNDEBUG")
+		set(COMMON_FLAGS "-Wall -Wfatal-errors -g")
+		if(NOT (("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64") OR ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")) AND ENABLE_AVX)
+		       set(COMMON_FLAGS "${COMMON_FLAGS} -march=native -mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq")
+		endif()
+		SET(CMAKE_CXX_FLAGS_RELEASE "-O3  -DNDEBUG -DGSL_UNENFORCED_ON_CONTRACT_VIOLATION")
 		SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO " -O2 -g -ggdb")
 		SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g -ggdb")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
@@ -52,6 +55,7 @@ if("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
 
 endif()
 
+include_directories(cryptoTools/thirdparty)
 
 if(DEFINED LIBOTE_CPP_VER)
     message("warning: setting LIBOTE_STD_VER as LIBOTE_CPP_VER=${LIBOTE_CPP_VER}")
@@ -75,6 +79,30 @@ if(NOT ENABLE_COPROTO)
     set(ENABLE_COPROTO true)
 endif()
 
+
+if(DEFINED LIBOTE_CPP_VER)
+    message("warning: setting LIBOTE_STD_VER as LIBOTE_CPP_VER=${LIBOTE_CPP_VER}")
+    set(LIBOTE_STD_VER ${LIBOTE_CPP_VER})
+    unset(LIBOTE_CPP_VER CACHE )
+endif()
+if(NOT DEFINED LIBOTE_STD_VER)
+	set(LIBOTE_STD_VER 14)
+endif()
+if(NOT LIBOTE_STD_VER EQUAL 20 AND
+	NOT LIBOTE_STD_VER EQUAL 17 AND
+	NOT LIBOTE_STD_VER EQUAL 14)
+	message(FATAL_ERROR "Unknown c++ version. LIBOTE_STD_VER=${LIBOTE_STD_VER}")
+endif()
+set(CRYPTO_TOOLS_STD_VER ${LIBOTE_STD_VER})
+if(NOT DEFINED ENABLE_COPROTO)
+    set(ENABLE_COPROTO true)
+endif()
+if(NOT ENABLE_COPROTO)
+    message("warning: setting ENABLE_BOOST as true")
+    set(ENABLE_COPROTO true)
+endif()
+
+include_directories(cryptoTools/thirdparty)
 
 #############################################
 #    Build cryptoTools (common utilities)   #
@@ -111,6 +139,7 @@ add_subdirectory(libOTe_Tests)
 #              Build Frontend               #
 #############################################
 add_subdirectory(frontend)
+#add_subdirectory(minimal)
 
 
 
